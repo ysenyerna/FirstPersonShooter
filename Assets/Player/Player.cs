@@ -16,24 +16,30 @@ public class Player : MonoBehaviour
 	InputActionMap input; 
 	CapsuleCollider hitbox;
 	Timer jumpBuffer;
+	Animator gunAnim;
 
+	private bool canShoot = true;
 	LayerMask terrain;
+
+	public static Player current { get; private set; }
 
 	private void Start()
 	{
+		current = this;
 		// Connect inputs
 		input = InputSystem.actions.actionMaps.First(m => m.name == "Player");
 		input["Jump"].performed += OnJumpPressed;
+		input["Attack"].performed += OnShootPressed;
 
 		// Get components
 		body = GetComponent<Rigidbody>();
 		hitbox = GetComponent<CapsuleCollider>();
 		cam = transform.Find("Camera").GetComponent<Camera>();
 		jumpBuffer = GetComponent<Timer>();
+		gunAnim = transform.Find("Camera/Gun").GetComponent<Animator>();
 	
 		// Physics
 		terrain = LayerMask.GetMask("Terrain");
-		print(LayerMask.LayerToName(terrain));
 
 	}
 
@@ -41,7 +47,6 @@ public class Player : MonoBehaviour
 	private void Update()
 	{
 		HandleLooking();
-		print(IsOnFloor());
 	}
 
 	private void FixedUpdate()
@@ -49,10 +54,6 @@ public class Player : MonoBehaviour
 		HandleMovement();
 	}
 
-	private void OnJumpPressed(InputAction.CallbackContext ctx)
-	{
-		jumpBuffer.Run();
-	}
 
 	private void HandleLooking()
 	{
@@ -87,10 +88,43 @@ public class Player : MonoBehaviour
 
 	}
 
+	public Mesh mesh;
+	private void Shoot()
+	{
+		canShoot = false;
+		gunAnim.Play("GunShoot");
+
+		// Make raycast
+		var hit = Physics.Raycast(new (cam.transform.position, cam.transform.forward), out var info);
+		
+		
+	}
+
+
+
+
+	// HELPER METHODS
 	private bool IsOnFloor()
 		=> Physics.SphereCast(new (transform.position, Vector3.down), hitbox.radius, (hitbox.height / 2f) - (hitbox.radius - 0.05f), terrain);
 
+
 		
 
+	// EVENTS
+	private void OnJumpPressed(InputAction.CallbackContext ctx)
+	{
+		jumpBuffer.Run();
+	}
+
+	private void OnShootPressed(InputAction.CallbackContext ctx)
+	{
+		if (canShoot)
+			Shoot();
+	}
+
+	public void ShootAnimationFinished()
+	{
+		canShoot = true;
+	}
 
 }
