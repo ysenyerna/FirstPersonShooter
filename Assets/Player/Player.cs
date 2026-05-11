@@ -57,7 +57,6 @@ public class Player : MonoBehaviour
 		HandleMovement();
 	}
 
-
 	private void HandleLooking()
 	{
 		Vector2 lookVelocity = input["Look"].ReadValue<Vector2>() * mouseSensitivity * Time.deltaTime;
@@ -101,6 +100,9 @@ public class Player : MonoBehaviour
 		// Shoot
 		canShoot = false;
 		gunAnim.Play("GunShoot");
+
+		// Recoil
+
 
 		// Make raycast
 		var hit = Physics.Raycast(new (cam.transform.position, cam.transform.forward), out var info);
