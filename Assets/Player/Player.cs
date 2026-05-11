@@ -55,7 +55,6 @@ public class Player : MonoBehaviour
 	private void FixedUpdate()
 	{
 		HandleMovement();
-		print(IsOnFloor());
 	}
 
 
