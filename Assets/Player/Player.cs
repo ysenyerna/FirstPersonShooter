@@ -18,6 +18,7 @@ public class Player : MonoBehaviour
 	Timer jumpBuffer;
 	Animator gunAnim;
 
+	private bool controllingCamera = false;
 	private bool canShoot = true;
 	LayerMask terrain;
 
@@ -30,6 +31,7 @@ public class Player : MonoBehaviour
 		input = InputSystem.actions.actionMaps.First(m => m.name == "Player");
 		input["Jump"].performed += OnJumpPressed;
 		input["Attack"].performed += OnShootPressed;
+		input["Escape"].performed += OnEscapePressed;
 
 		// Get components
 		body = GetComponent<Rigidbody>();
@@ -46,12 +48,14 @@ public class Player : MonoBehaviour
 
 	private void Update()
 	{
-		HandleLooking();
+		if (controllingCamera)
+			HandleLooking();
 	}
 
 	private void FixedUpdate()
 	{
 		HandleMovement();
+		print(IsOnFloor());
 	}
 
 
@@ -91,11 +95,23 @@ public class Player : MonoBehaviour
 	public Mesh mesh;
 	private void Shoot()
 	{
+		// Enable camera -- temporary for testing
+		controllingCamera = true;
+		Cursor.lockState = CursorLockMode.Locked;
+
+		// Shoot
 		canShoot = false;
 		gunAnim.Play("GunShoot");
 
 		// Make raycast
 		var hit = Physics.Raycast(new (cam.transform.position, cam.transform.forward), out var info);
+		if (hit)
+		{
+			if (info.collider.TryGetComponent<IShootable>( out var shootable ))
+			{
+				shootable.WasShot();
+			}
+		}
 		
 		
 	}
@@ -126,5 +142,13 @@ public class Player : MonoBehaviour
 	{
 		canShoot = true;
 	}
+
+
+	private void OnEscapePressed(InputAction.CallbackContext ctx)
+	{
+		controllingCamera = false;
+		Cursor.lockState = CursorLockMode.None;
+	}
+
 
 }
