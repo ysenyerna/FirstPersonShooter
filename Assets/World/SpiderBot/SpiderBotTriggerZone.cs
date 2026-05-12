@@ -5,10 +5,14 @@ public class SpiderBotTriggerZone : MonoBehaviour
 
 	public SpiderBot[] spiderBots;
 
+	bool triggered = false;
+
 	public void OnTriggerEnter(Collider collider)
 	{
-		if (!collider.CompareTag("Player")) 
+		if (triggered || !collider.CompareTag("Player"))
 			return;
+
+		triggered = true;
 
 		foreach (var bot in spiderBots)
 		{
@@ -17,8 +21,7 @@ public class SpiderBotTriggerZone : MonoBehaviour
 
 			bot.Aggro = true;
 		}
-	
-	Destroy(gameObject);
+
 	}
 
 }

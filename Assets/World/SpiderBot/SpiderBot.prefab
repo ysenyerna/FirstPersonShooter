@@ -479,7 +479,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpiderBot
   speed: 0.05
   explodable: {fileID: 5485184598224182848, guid: bd9f105a31e6b57478ed09022a806b9d, type: 3}
-  health: 5
+  health: 3
   deathExplosionForce: 100
   deathExplosionRadius: 10
 --- !u!135 &5034892659878326648

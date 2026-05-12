@@ -1,9 +1,11 @@
+using System;
 using UnityEngine;
 
 public class SpiderBot : MonoBehaviour, IShootable
 {
 	public float speed = 1f;
 	public GameObject explodable;
+	public Action Died;
 
 	Transform head;
 	Rigidbody body;
@@ -82,6 +84,7 @@ public class SpiderBot : MonoBehaviour, IShootable
 		health -= 1;
 		if (health <= 0)
 		{
+			Died?.Invoke();
 			// Trigger explosion
 			var explosion = Instantiate(explodable, transform.position, transform.rotation);
 			foreach (var part in explosion.GetComponentsInChildren<Rigidbody>())
