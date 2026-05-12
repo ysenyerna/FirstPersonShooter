@@ -1,9 +1,17 @@
+using System;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class Player : MonoBehaviour
 {
+
+	public int maxHealth = 50;
+	public int health;
+	public bool IsDead { get; private set; }
+	public Action GameEnded;
+
+	bool end = false;
 
 	[SerializeField] float moveSpeed = 3f;
 	[SerializeField] float jumpVelocity = 5f;
@@ -28,6 +36,7 @@ public class Player : MonoBehaviour
 
 	private void Start()
 	{
+		health = maxHealth;
 		current = this;
 		// Connect inputs
 		input = InputSystem.actions.actionMaps.First(m => m.name == "Player");
@@ -46,18 +55,29 @@ public class Player : MonoBehaviour
 		// Physics
 		terrain = LayerMask.GetMask("Terrain");
 
+		// Events
+		GameEnded += OnGameEnded;
+
 	}
 
 
 	private void Update()
 	{
-		if (controllingCamera)
+		if (controllingCamera && !end)
 			HandleLooking();
 	}
 
 	private void FixedUpdate()
 	{
-		HandleMovement();
+		if (!end)
+			HandleMovement();
+
+		// Kill the player if they fall off the edge
+		if (transform.position.y < -5)
+		{
+			IsDead = true;
+			GameEnded.Invoke();
+		}
 	}
 
 	private void HandleLooking()
@@ -93,7 +113,6 @@ public class Player : MonoBehaviour
 
 	}
 
-	public Mesh mesh;
 	private void Shoot()
 	{
 		// Enable camera -- temporary for testing
@@ -129,6 +148,17 @@ public class Player : MonoBehaviour
 	}
 
 
+	private void TakenDamage(int damage)
+	{
+		health -= damage;
+
+		if (health <= 0)
+		{
+			IsDead = true;
+			GameEnded.Invoke();
+		}
+	}
+
 
 
 	// HELPER METHODS
@@ -146,7 +176,7 @@ public class Player : MonoBehaviour
 
 	private void OnShootPressed(InputAction.CallbackContext ctx)
 	{
-		if (canShoot)
+		if (canShoot && !end)
 			Shoot();
 	}
 
@@ -162,5 +192,29 @@ public class Player : MonoBehaviour
 		Cursor.lockState = CursorLockMode.None;
 	}
 
+	private void OnCollisionEnter(Collision collision)
+	{
+
+		// Take damage from enemies
+		if (collision.transform.TryGetComponent<SpiderBot>(out var enemy))
+		{
+			TakenDamage(enemy.damage);
+		}
+	}
+
+	private void OnTriggerEnter(Collider collider)
+	{
+		if (collider.transform.name == "WinZone")
+		{
+			GameEnded.Invoke();
+		}
+	}
+
+	private void OnGameEnded()
+	{
+		end = true;
+		controllingCamera = false;
+		Cursor.lockState = CursorLockMode.None;
+	}
 
 }

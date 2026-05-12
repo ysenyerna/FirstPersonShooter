@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class SpiderBot : MonoBehaviour, IShootable
 {
+	public int damage = 10; // how much damage this enemy does to the player
 	public float speed = 1f;
 	public GameObject explodable;
 	public GameObject explosion;
