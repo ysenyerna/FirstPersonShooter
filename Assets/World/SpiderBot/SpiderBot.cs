@@ -5,6 +5,7 @@ public class SpiderBot : MonoBehaviour, IShootable
 {
 	public float speed = 1f;
 	public GameObject explodable;
+	public GameObject explosion;
 	public Action Died;
 
 	Transform head;
@@ -86,8 +87,9 @@ public class SpiderBot : MonoBehaviour, IShootable
 		{
 			Died?.Invoke();
 			// Trigger explosion
-			var explosion = Instantiate(explodable, transform.position, transform.rotation);
-			foreach (var part in explosion.GetComponentsInChildren<Rigidbody>())
+			Instantiate(explosion, transform.position, transform.rotation);
+			var duplicate = Instantiate(explodable, transform.position, transform.rotation);
+			foreach (var part in duplicate.GetComponentsInChildren<Rigidbody>())
 			{
 				print(part.name);
 				part.AddExplosionForce(deathExplosionForce, transform.position, deathExplosionRadius);

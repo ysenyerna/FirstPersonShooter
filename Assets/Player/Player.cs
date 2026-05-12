@@ -10,6 +10,7 @@ public class Player : MonoBehaviour
 	[SerializeField] float mouseSensitivity = 1f;
 	float maxVerticalRotation = 80f;
 	
+	[SerializeField] GameObject bulletImpactFx;
 
 	Camera cam;
 	Rigidbody body;
@@ -17,6 +18,7 @@ public class Player : MonoBehaviour
 	CapsuleCollider hitbox;
 	Timer jumpBuffer;
 	Animator gunAnim;
+	ParticleSystem muzzleFlash;
 
 	private bool controllingCamera = false;
 	private bool canShoot = true;
@@ -39,6 +41,7 @@ public class Player : MonoBehaviour
 		cam = transform.Find("Camera").GetComponent<Camera>();
 		jumpBuffer = GetComponent<Timer>();
 		gunAnim = transform.Find("Camera/Gun").GetComponent<Animator>();
+		muzzleFlash = gunAnim.transform.Find("MuzzleFlash").GetComponent<ParticleSystem>();
 	
 		// Physics
 		terrain = LayerMask.GetMask("Terrain");
@@ -100,14 +103,22 @@ public class Player : MonoBehaviour
 		// Shoot
 		canShoot = false;
 		gunAnim.Play("GunShoot");
-
-		// Recoil
+		muzzleFlash.Play();
 
 
 		// Make raycast
 		var hit = Physics.Raycast(new (cam.transform.position, cam.transform.forward), out var info);
 		if (hit)
 		{
+			// Create impact effect
+			var effect = bulletImpactFx;
+			if (info.collider.TryGetComponent<CustomBulletImpactEffect>(out var c))
+				effect = c.customEffect;
+
+			var rotation = Vector3.Normalize(cam.transform.position - info.point);
+			Instantiate(effect, info.point, Quaternion.LookRotation(rotation));
+
+			// Trigger IShootable event
 			if (info.collider.TryGetComponent<IShootable>( out var shootable ))
 			{
 				shootable.WasShot();
